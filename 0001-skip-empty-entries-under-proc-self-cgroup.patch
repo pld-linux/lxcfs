@@ -1,0 +1,60 @@
+From a67719f64d07d7fee96b1e145a03659fe4db0c6e Mon Sep 17 00:00:00 2001
+From: Christian Brauner <cbrauner@suse.de>
+Date: Sat, 9 Jul 2016 13:19:06 +0200
+Subject: [PATCH] skip empty entries under /proc/self/cgroup
+
+If cgroupv2 is enabled either alone or together with legacy hierarchies
+/proc/self/cgroup can contain entries of the form:
+
+        0::/
+
+This will cause lxcfs to fail the cgroup mounts because it parses out the empty
+string "" and later on passes it to mount(). Let's skip such entries.
+
+Signed-off-by: Christian Brauner <cbrauner@suse.de>
+---
+ bindings.c | 8 ++++++++
+ lxcfs.c    | 8 ++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/bindings.c b/bindings.c
+index cb98e12..8186ca9 100644
+--- a/bindings.c
++++ b/bindings.c
+@@ -3951,6 +3951,14 @@ static void __attribute__((constructor)) collect_subsystems(void)
+ 			goto out;
+ 		*p2 = '\0';
+ 
++		/* With cgroupv2 /proc/self/cgroup can contain entries of the
++		 * form: 0::/ This will cause lxcfs to fail the cgroup mounts
++		 * because it parses out the empty string "" and later on passes
++		 * it to mount(). Let's skip such entries.
++		 */
++		if (!strcmp(p, ""))
++			continue;
++
+ 		if (!store_hierarchy(line, p))
+ 			goto out;
+ 	}
+diff --git a/lxcfs.c b/lxcfs.c
+index 7455267..1d19a10 100644
+--- a/lxcfs.c
++++ b/lxcfs.c
+@@ -859,6 +859,14 @@ static bool do_mount_cgroups(void)
+ 			goto out;
+ 		*p2 = '\0';
+ 
++		/* With cgroupv2 /proc/self/cgroup can contain entries of the
++		 * form: 0::/ This will cause lxcfs to fail the cgroup mounts
++		 * because it parses out the empty string "" and later on passes
++		 * it to mount(). Let's skip such entries.
++		 */
++		if (!strcmp(p, ""))
++			continue;
++
+ 		if (!do_mount_cgroup(p))
+ 			goto out;
+ 	}
+-- 
+2.8.4
+
