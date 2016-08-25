@@ -8,10 +8,12 @@ Source0:	https://linuxcontainers.org/downloads/lxcfs/%{name}-%{version}.tar.gz
 # Source0-md5:	fea9124c9d6d7370e12c4a3f0d405541
 URL:		https://linuxcontainers.org/lxcfs/
 Patch0:		0001-skip-empty-entries-under-proc-self-cgroup.patch
+Patch1:		pld.patch
 BuildRequires:	help2man
 BuildRequires:	libfuse-devel
 BuildRequires:	pam-devel
 BuildRequires:	pkg-config
+BuildRequires:	pld-release
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	%{_prefix}/lib
@@ -48,12 +50,13 @@ listed on the command line.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 %build
 %configure \
-	--with-distro=suse \
+	--with-distro=pld
 
-%{__make} %{?_smp_mflags}
+%{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -61,8 +64,6 @@ rm -rf $RPM_BUILD_ROOT
 	DESTDIR=$RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT{%{systemdunitdir},%{_libexecdir},%{_includedir}/%{name},%{_localstatedir}/lib/%{name}}
-
-cp -p config/init/systemd/*.service $RPM_BUILD_ROOT%{systemdunitdir}
 
 # The shared library liblxcfs.so used by lxcfs is not supposed to be used by
 # any other program. So we follow best practice and install it in
@@ -95,6 +96,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/lxcfs
 %{_mandir}/man1/lxcfs.1*
 %{systemdunitdir}/lxcfs.service
+%attr(754,root,root) /etc/rc.d/init.d/lxcfs
 %dir %{_datadir}/%{name}
 %attr(755,root,root) %{_datadir}/%{name}/lxc.mount.hook
 %attr(755,root,root) %{_datadir}/%{name}/lxc.reboot.hook
