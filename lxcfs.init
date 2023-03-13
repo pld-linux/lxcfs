@@ -1,0 +1,87 @@
+#!/bin/sh
+#
+# lxcfs		FUSE filesystem for LXC
+#
+# chkconfig:	345 14 91
+#
+# description:	lxcfs FUSE filesystem for LXC
+#
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+PIDFILE=/var/run/lxcfs.pid
+
+LXCFS_OPTIONS=
+LXCFS_DIR=/var/lib/lxcfs
+
+# Get service config
+[ -f /etc/sysconfig/lxcfs ] && . /etc/sysconfig/lxcfs
+
+start() {
+	# Check if the service is already running?
+	if [ ! -f /var/lock/subsys/lxcfs ]; then
+		msg_starting lxcfs; busy
+		start-stop-daemon -S -q -b -m -p $PIDFILE -x /usr/bin/lxcfs $LXCFS_OPTIONS $LXCFS_DIR
+		RETVAL=$?
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/lxcfs
+		ok
+	else
+		msg_already_running lxcfs
+	fi
+}
+
+stop() {
+	if [ -f /var/lock/subsys/lxcfs ]; then
+		msg_stopping lxcfs
+		start-stop-daemon -K -p $PIDFILE -n lxcfs
+		ok
+		rm -f $PIDFILE /var/lock/subsys/lxcfs >/dev/null 2>&1
+	else
+		msg_not_running lxcfs
+	fi
+}
+
+condrestart() {
+	if [ -f /var/lock/subsys/lxcfs ]; then
+		stop
+		start
+	else
+		msg_not_running lxcfs
+		RETVAL=$1
+	fi
+}
+
+RETVAL=0
+# See how we were called.
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  restart)
+	stop
+	start
+	;;
+  try-restart)
+	condrestart 0
+	;;
+  reload)
+	killproc -p $PIDFILE -HUP
+	RETVAL=$?
+	;;
+  force-reload)
+	condrestart 7
+	;;
+  status)
+	status lxcfs
+	exit $?
+	;;
+  *)
+	msg_usage "$0 {start|stop|restart|try-restart|reload|force-reload|status}"
+	exit 3
+esac
+
+exit $RETVAL
