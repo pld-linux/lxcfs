@@ -1,11 +1,11 @@
 Summary:	FUSE filesystem for LXC
 Name:		lxcfs
-Version:	5.0.4
+Version:	6.0.1
 Release:	1
 License:	Apache v2.0
 Group:		Applications/System
 Source0:	https://linuxcontainers.org/downloads/lxcfs/%{name}-%{version}.tar.gz
-# Source0-md5:	00a6632e094d0a2f2308c8365ac91912
+# Source0-md5:	9c2295915ab2491ab2224515c5624f90
 Source1:	lxcfs.init
 URL:		https://linuxcontainers.org/lxcfs/
 BuildRequires:	help2man
