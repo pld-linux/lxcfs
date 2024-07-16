@@ -1,11 +1,11 @@
 Summary:	FUSE filesystem for LXC
 Name:		lxcfs
-Version:	5.0.3
+Version:	5.0.4
 Release:	1
 License:	Apache v2.0
 Group:		Applications/System
 Source0:	https://linuxcontainers.org/downloads/lxcfs/%{name}-%{version}.tar.gz
-# Source0-md5:	5a5bba028196ce7186f4b58d552f424e
+# Source0-md5:	00a6632e094d0a2f2308c8365ac91912
 Source1:	lxcfs.init
 URL:		https://linuxcontainers.org/lxcfs/
 BuildRequires:	help2man
@@ -57,7 +57,6 @@ install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 
 %{__rm} -f $RPM_BUILD_ROOT/etc/init.d/%{name}
 %{__rmdir} $RPM_BUILD_ROOT/etc/init.d
-%{__mv} $RPM_BUILD_ROOT{/usr/lib/systemd/system/lxcfs.service,%{systemdunitdir}}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
