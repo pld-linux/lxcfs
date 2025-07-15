@@ -42,18 +42,18 @@ proc masking feature.
 %setup -q
 
 %build
-%meson build \
+%meson \
 	-Dinit-script=sysvinit,systemd \
 	-Db_sanitize=address,undefined
 
-%ninja_build -C build
+%meson_build
 
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{,%{systemdunitdir},/etc/rc.d/init.d,/var/lib/%{name}}
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 
-%ninja_install -C build
+%meson_install
 
 %{__rm} -f $RPM_BUILD_ROOT/etc/init.d/%{name}
 %{__rmdir} $RPM_BUILD_ROOT/etc/init.d
