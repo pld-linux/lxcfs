@@ -1,0 +1,12 @@
+gold is deprecated in binutils and links differently from the default bfd/lld
+the rest of the distro uses; keep lxcfs on the system default linker.
+--- lxcfs-7.0.0/meson.build.orig
++++ lxcfs-7.0.0/meson.build
+@@ -116,7 +116,6 @@
+     '-Wl,--gc-sections',
+     '-Wl,-z,relro',
+     '-Wl,-z,now',
+-    '-Wl,-fuse-ld=gold',
+ ]
+ 
+ if meson.version().version_compare('>=0.46')

@@ -1,21 +1,22 @@
 Summary:	FUSE filesystem for LXC
 Name:		lxcfs
-Version:	6.0.1
+Version:	7.0.0
 Release:	1
 License:	Apache v2.0
 Group:		Applications/System
 Source0:	https://linuxcontainers.org/downloads/lxcfs/%{name}-%{version}.tar.gz
-# Source0-md5:	9c2295915ab2491ab2224515c5624f90
+# Source0-md5:	30987accb7feffe4847354133547cf27
 Source1:	lxcfs.init
+Patch0:		%{name}-no-gold.patch
 URL:		https://linuxcontainers.org/lxcfs/
 BuildRequires:	help2man
-BuildRequires:	libasan-devel
-BuildRequires:	libfuse-devel
-BuildRequires:	libubsan-devel
-BuildRequires:	pam-devel
+BuildRequires:	libfuse3-devel
+BuildRequires:	meson >= 0.50
+BuildRequires:	ninja >= 1.5
 BuildRequires:	pkg-config
-BuildRequires:	pld-release
-Requires:	lxc
+BuildRequires:	python3-jinja2
+BuildRequires:	rpmbuild(macros) >= 2.042
+BuildRequires:	systemd-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -40,11 +41,11 @@ proc masking feature.
 
 %prep
 %setup -q
+%patch -P0 -p1
 
 %build
 %meson \
-	-Dinit-script=sysvinit,systemd \
-	-Db_sanitize=address,undefined
+	-Dinit-script=systemd
 
 %meson_build
 
@@ -54,9 +55,6 @@ install -d $RPM_BUILD_ROOT{,%{systemdunitdir},/etc/rc.d/init.d,/var/lib/%{name}}
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 
 %meson_install
-
-%{__rm} -f $RPM_BUILD_ROOT/etc/init.d/%{name}
-%{__rmdir} $RPM_BUILD_ROOT/etc/init.d
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -73,6 +71,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_datadir}/%{name}/lxc.mount.hook
 %attr(755,root,root) %{_datadir}/%{name}/lxc.reboot.hook
 %dir %{_localstatedir}/lib/%{name}
+# lxc (if installed) picks the hook config up from here; lxcfs itself does not need lxc
+%dir %{_datadir}/lxc
+%dir %{_datadir}/lxc/config
+%dir %{_datadir}/lxc/config/common.conf.d
 %{_datadir}/lxc/config/common.conf.d/00-lxcfs.conf
 %attr(755,root,root) %{_libdir}/%{name}/liblxcfs.so
 
